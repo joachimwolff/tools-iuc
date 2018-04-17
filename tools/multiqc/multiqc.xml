@@ -200,7 +200,7 @@ mkdir multiqc_WDir &&
     #elif str($repeat.software_cond.software) == "hisat2"
         #set $pattern = "HISAT2 summary stats:"
         @LN_FILES@
-     #elif str($repeat.software_cond.software) == "hicexplorer"
+    #elif str($repeat.software_cond.software) == "hicexplorer"
         #set $pattern = "Min rest. site distance"
         #for $i, $file in enumerate($repeat.software_cond.input)
             grep -q "$pattern" $file || die "'$pattern' not found in the file" &&
