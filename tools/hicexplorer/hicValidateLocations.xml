@@ -22,9 +22,8 @@
                         help="The loop file from hicDetectLoops. To use files from other sources, '
                                 'please follow \'chr start end chr start end\' format." />
         <param argument="--protein" type="data" format='bed'
-                        label="Loop file"
-                        help="The loop file from hicDetectLoops. To use files from other sources, '
-                                'please follow \'chr start end chr start end\' format." />
+                        label="Protein file"
+                        help="The protein peak file. Can be narrowPeak or broadPeak." />
         <param argument="--resolution" type="integer" value=""
                 label="Used resolution"
                 help='The to be binned resolution.'/>    
