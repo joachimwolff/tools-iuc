@@ -27,17 +27,25 @@
             --outputFolder interactionFiles
             $writeFileNamesToFile
 
+            && cd interactionFiles
+            && rename 's/\.bed$/.txt/' *.bed*
+            #if $writeFileNamesToFile:
+                && cd ..
+                && sed -i 's/.bed/.txt/g' interactionFiles.txt
+            #end if
+
+
     ]]></command>
     <inputs>
         <expand macro="matrix_h5_cooler_multiple_macro" />
 
-        <param argument="--referencePoints" type="data" format='interval'
+        <param argument="--referencePoints" type="data" format='txt'
                         label="Reference points"
-                        help="Bed file contains all reference points which should be used to create viewpoints." />
+                        help="File contains all reference points which should be used to create viewpoints." />
         <param name="rangeUpstream" type="integer" value="500000"  label="Upstream range" help='Defines the region upstream of a reference point which should be considered in the analysis.' />
         <param name="rangeDownstream" type="integer" value="500000"  label="Downstream range" help='Defines the region upstream of a reference point which should be considered in the analysis.' />   
 
-        <param argument="--backgroundModelFile" type="data" format='tabular'
+        <param argument="--backgroundModelFile" type="data" format='txt'
                         label="Background model"
                         help="The background file computed by chicViewpointBackgroundModel" />
         <param argument="--averageContactBin" type="integer" value="5"  label="Average contacts window size" help='Average the contacts of n bins via a sliding window approach.'/>    
@@ -47,7 +55,8 @@
     </inputs>
     <outputs>
         <collection name="interactionFilesCollection" type="list" label="Interaction files">
-            <discover_datasets pattern="__name__" format="interval"  directory="interactionFiles" />
+            <discover_datasets pattern="__name_and_ext__" directory="interactionFiles" />
+            <!-- <discover_datasets pattern="__name_and_ext__" directory="plots" /> -->
         </collection>
         <data name="interactionFileNames" from_work_dir="interactionFiles.txt" format="txt" label="${tool.name} interaction file names">
             <filter>writeFileNamesToFile</filter>
@@ -57,8 +66,8 @@
         <test>
            <param name="matrix_h5_cooler_multiple" value="cHi-C/FL-E13-5_chr1.cool,cHi-C/MB-E10-5_chr1.cool"/>
             
-            <param name="referencePoints" value="cHi-C/referencePoints_chicViewpoint.bed"/>
-            <param name="backgroundModelFile" value="cHi-C/background.bed"/>
+            <param name="referencePoints" value="cHi-C/referencePoints_chicViewpoint.txt"/>
+            <param name="backgroundModelFile" value="cHi-C/background.txt"/>
             <param name="fixateRange" value="500000"/>
             <param name="rangeUpstream" value="200000"/>
             <param name="rangeDownstream" value="200000"/>
@@ -66,13 +75,13 @@
 
            
             <output_collection name="interactionFilesCollection" type="list" count="6">
-                <element name="FL-E13-5_chr1_chr1_14300280_14300280_Eya1.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_14300280_14300280_Eya1.bed" ftype="interval" lines_diff="3"/>
-                <element name="FL-E13-5_chr1_chr1_4487435_4487435_Sox17.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_4487435_4487435_Sox17.bed" ftype="interval" lines_diff="3"/>
-                <element name="FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.bed" ftype="interval" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_14300280_14300280_Eya1" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_14300280_14300280_Eya1.txt" ftype="txt" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_4487435_4487435_Sox17" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_4487435_4487435_Sox17.txt" ftype="txt" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.txt" ftype="txt" lines_diff="3"/>
 
-                <element name="MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.bed" ftype="interval" lines_diff="3"/>
-                <element name="MB-E10-5_chr1_chr1_14300280_14300280_Eya1.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_14300280_14300280_Eya1.bed" ftype="interval" lines_diff="3"/>
-                <element name="MB-E10-5_chr1_chr1_4487435_4487435_Sox17.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_4487435_4487435_Sox17.bed" ftype="interval" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.txt" ftype="txt" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_14300280_14300280_Eya1" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_14300280_14300280_Eya1.txt" ftype="txt" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_4487435_4487435_Sox17" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_4487435_4487435_Sox17.txt" ftype="txt" lines_diff="3"/>
             </output_collection>
             <output name="interactionFileNames" file="cHi-C/chicViewpoint/fileNames_two_matrices.txt" ftype="txt" lines_diff='0'/>
             
@@ -80,8 +89,8 @@
         <test>
            <param name="matrix_h5_cooler_multiple" value="cHi-C/FL-E13-5_chr1.cool,cHi-C/MB-E10-5_chr1.cool"/>
             
-            <param name="referencePoints" value="cHi-C/referencePoints_chicViewpoint.bed"/>
-            <param name="backgroundModelFile" value="cHi-C/background.bed"/>
+            <param name="referencePoints" value="cHi-C/referencePoints_chicViewpoint.txt"/>
+            <param name="backgroundModelFile" value="cHi-C/background.txt"/>
             <param name="fixateRange" value="500000"/>
             <param name="rangeUpstream" value="200000"/>
             <param name="rangeDownstream" value="200000"/>
@@ -89,13 +98,13 @@
 
            
             <output_collection name="interactionFilesCollection" type="list" count="6">
-                <element name="FL-E13-5_chr1_chr1_14300280_14300280_Eya1.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_14300280_14300280_Eya1.bed" ftype="interval" lines_diff="3"/>
-                <element name="FL-E13-5_chr1_chr1_4487435_4487435_Sox17.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_4487435_4487435_Sox17.bed" ftype="interval" lines_diff="3"/>
-                <element name="FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.bed" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.bed" ftype="interval" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_14300280_14300280_Eya1" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_14300280_14300280_Eya1.txt" ftype="txt" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_4487435_4487435_Sox17" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_4487435_4487435_Sox17.txt" ftype="txt" lines_diff="3"/>
+                <element name="FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d" file="cHi-C/chicViewpoint/output_3/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d.txt" ftype="txt" lines_diff="3"/>
 
-                <element name="MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.bed" ftype="interval" lines_diff="3"/>
-                <element name="MB-E10-5_chr1_chr1_14300280_14300280_Eya1.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_14300280_14300280_Eya1.bed" ftype="interval" lines_diff="3"/>
-                <element name="MB-E10-5_chr1_chr1_4487435_4487435_Sox17.bed" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_4487435_4487435_Sox17.bed" ftype="interval" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d.txt" ftype="txt" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_14300280_14300280_Eya1" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_14300280_14300280_Eya1.txt" ftype="txt" lines_diff="3"/>
+                <element name="MB-E10-5_chr1_chr1_4487435_4487435_Sox17" file="cHi-C/chicViewpoint/output_3/MB-E10-5_chr1_chr1_4487435_4487435_Sox17.txt" ftype="txt" lines_diff="3"/>
             </output_collection>
             <!-- <output name="interactionFileNames" file="cHi-C/chicViewpoint/fileNames_two_matrices.txt" ftype="txt" lines_diff='0'/> -->
             

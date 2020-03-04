@@ -32,9 +32,26 @@
             --alpha $alpha
             --outputFolder differentialFolder
             --threads @THREADS@
+
+            #if $batchmode_conditional.batchmode_selector == 'optionSinglemode':
+                && rename 's/\.bed$/.txt/' *.bed*
+
+
+            #else:
+                && rename 's/\.bed$/.txt/' *.bed*
+                && cd interactionFiles
+                && rename 's/\.bed$/.txt/' *.bed*
+                && cd ..
+                && sed -i 's/.bed/.txt/g' rejected_H0.txt
+
+            #end if 
+
+            && cd differentialFolder
+            && rename 's/\.bed$/.txt/' *.bed* 
+
     ]]></command>
     <inputs>
-        <param name='interactionFiles' type="data" format="interval" label="Interaction files" multiple="true"/>
+        <param name='interactionFiles' type="data" format="txt" label="Interaction files" multiple="true"/>
 
         <conditional name="batchmode_conditional">
             <param name="batchmode_selector" type="select" label="Compute files individually or in batch mode">
@@ -55,7 +72,7 @@
     </inputs>
     <outputs>
         <collection name="differentialFolderCollection" type="list" label="Differential test files">
-            <discover_datasets pattern="__name__" format="interval"  directory="differentialFolder" />
+            <discover_datasets pattern="__name_and_ext__" directory="differentialFolder" />
         </collection>
         <data name="rejectedFileNames" from_work_dir="rejected_H0.txt" format="txt" label="${tool.name} rejected H0">
             <filter>batchmode_conditional.batchmode_selector == 'optionBatchmode'</filter>
@@ -63,7 +80,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="interactionFiles" value="cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_14300280_14300280_Eya1_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_14300280_14300280_Eya1_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_4487435_4487435_Sox17_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_4487435_4487435_Sox17_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_aggregated.bed"/>
+            <param name="interactionFiles" value="cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_14300280_14300280_Eya1_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_14300280_14300280_Eya1_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_4487435_4487435_Sox17_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_4487435_4487435_Sox17_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_19093103_19093103_Tfap2d_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_aggregated.txt"/>
             
             <conditional name="batchmode_conditional">
                 <param name="batchmode_selector" value='optionBatchmode'/>
@@ -72,25 +89,25 @@
             <param name="statisticTest_selector" value='chi2'/>
             <param name="alpha" value='0.5'/>
             <output_collection name="differentialFolderCollection" type="list" count="9">
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.bed" ftype="interval" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.txt" ftype="txt" lines_diff="4"/>
 
 
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_accepted.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_accepted.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_rejected.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_rejected.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_results.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_results.bed" ftype="interval" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_accepted" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_accepted.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_rejected" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_H0_rejected.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_results" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_19093103_19093103_Tfap2d_results.txt" ftype="txt" lines_diff="4"/>
                
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_accepted.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_accepted.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_rejected.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_rejected.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_results.bed" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_results.bed" ftype="interval" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_accepted" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_accepted.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_rejected" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_H0_rejected.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_results" file="cHi-C/chicDifferentialTest/batch_mode_chi2/FL-E13-5_MB-E10-5_chr1_chr1_4487435_4487435_Sox17_results.txt" ftype="txt" lines_diff="4"/>
             
             </output_collection>
 
             <output name="rejectedFileNames" file="cHi-C/chicDifferentialTest/rejectedFilesList.txt" ftype="txt" compare="sim_size" delta='40000'/>
         </test>
         <test>
-            <param name="interactionFiles" value="cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_14300280_14300280_Eya1_aggregated.bed,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_14300280_14300280_Eya1_aggregated.bed"/>
+            <param name="interactionFiles" value="cHi-C/chicAggregateStatistic/batch_mode/FL-E13-5_chr1_chr1_14300280_14300280_Eya1_aggregated.txt,cHi-C/chicAggregateStatistic/batch_mode/MB-E10-5_chr1_chr1_14300280_14300280_Eya1_aggregated.txt"/>
             
             <conditional name="batchmode_conditional">
                 <param name="batchmode_selector" value='optionSinglemode'/>
@@ -99,9 +116,9 @@
             <param name="alpha" value='0.5'/>
 
             <output_collection name="differentialFolderCollection" type="list" count="3">
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.bed" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.bed" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.bed" ftype="interval" lines_diff="4"/>
-                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.bed" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.bed" ftype="interval" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_accepted.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_H0_rejected.txt" ftype="txt" lines_diff="4"/>
+                <element name="FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results" file="cHi-C/chicDifferentialTest/regular_mode_fisher/FL-E13-5_MB-E10-5_chr1_chr1_14300280_14300280_Eya1_results.txt" ftype="txt" lines_diff="4"/>
             </output_collection>
         </test>
     </tests>

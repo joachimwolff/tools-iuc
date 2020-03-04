@@ -10,6 +10,8 @@
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="@WRAPPER_VERSION@">hicexplorer</requirement>
+            <requirement type="package" version="1.600">rename</requirement>
+
             <yield />
         </requirements>
         <version_command>@BINARY@ --version</version_command>
