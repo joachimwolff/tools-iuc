@@ -10,7 +10,7 @@
 
         --matrix '$matrix_scooler'
         --clusters $clusters
-
+        $noNormalization
         --outFileName consensus_matrix.scool
 
         --threads @THREADS@
@@ -22,6 +22,7 @@
         
         <expand macro="matrix_scooler_macro"/>
         <param name='clusters' type='data' format='txt' label='Cluster file' help='Cluster file created by scHicCluster, scHicClusterCompartments, scHicClusterMinHash or scHicClusterSVL'/>
+        <param name='noNormalization' type='boolean' truevalue='--no_normalization' falsevalue='' label='Do not normalize the matrices'/>
         
         <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
     </inputs>

@@ -19,12 +19,39 @@
             --chromosomes $chromosome
         #end if
 
-        --dimensionReductionMethod $dimensionReductionMethod_selector
+        #if $dimensionReductionMethod_conditional.dimensionReductionMethod_selector == 'knn':
+            $dimensionReductionMethod_conditional.additionalPCA
+            --dimensionsPCA $dimensionReductionMethod_conditional.dimensionsPCA
+            --dimensionReductionMethod $dimensionReductionMethod_conditional.dimensionReductionMethod_selector
+        else if $dimensionReductionMethod_conditional.dimensionReductionMethod_selector == 'pca':
+            --dimensionReductionMethod $dimensionReductionMethod_conditional.imensionReductionMethod_selector
+        #end if
+        
         --numberOfNearestNeighbors $numberOfNearestNeighbors
-        --outFileName cluster_list.txt
 
+        $intraChromosomalContactsOnly
+
+        #if $optional_parameters_conditional.optional_parameters_selector == 'yes':
+            --dpi $optional_parameters_conditional.dpi
+            --figuresize $optional_parameters_conditional.figuresize
+            --colorMap $optional_parameters_conditional.colormap
+            --fontsize $optional_parameters_conditional.fontsize
+            #if $optional_parameters_conditional.coloring_conditional.coloring_selector == 'type':
+                --cell_coloring_type $optional_parameters_conditional.coloring_conditional.cell_coloring_type
+                --latexTable latex.tex 
+            #else if $optional_parameters_conditional.coloring_conditional.coloring_selector == 'batch':
+                --cell_coloring_batch $optional_parameters_conditional.coloring_conditional.cell_coloring_batch
+                --latexTable latex.tex 
+            #end if
+
+        #end if
+
+
+        --outFileName cluster_list.txt
+        --createScatterPlot scatter.$optional_parameters_conditional.image_file_format
         --threads @THREADS@
 
+        && mv scatter.$optional_parameters_conditional.image_file_format scatter
 
 
     ]]></command>
@@ -35,18 +62,74 @@
                 <option value="kmeans" selected="True">K-means</option>
                 <option value="spectral" >Spectral clustering</option>
         </param>
-        <param name="dimensionReductionMethod_selector" type="select" label="Apply dimension reduction:">
-                <option value="none" selected="True">No dimension reduction</option>
-                <option value="knn" >Exact k-nearest neighbors</option>
-                <option value="pca" >Principal components</option>
-        </param>
+        <conditional name="dimensionReductionMethod_conditional">
+
+            <param name="dimensionReductionMethod_selector" type="select" label="Apply dimension reduction:">
+                    <option value="none" selected="True">No dimension reduction</option>
+                    <option value="knn" >Exact k-nearest neighbors</option>
+                    <option value="pca" >Principal components</option>
+            </param>
+            <when value='none' />
+            <when value='knn' >
+                <param name='additionalPCA' type='boolean' truevalue='--additionalPCA' falsevalue='' label='Additional PCA' help="Computes PCA on top of a k-nn. Can improve the cluster result."/>
+                <param name="dimensionsPCA" type="integer" value="20"  label="Use n PCA dimensions" help='The number of dimensions from the PCA matrix that should be considered for clustering. Can improve the cluster result.' />   
+            </when>
+            <when value='pca' />
+        </conditional>
         <param name="numberOfClusters" type="integer" value="7"  label="Number of clusters" help='How many clusters should be computed by kmeans or spectral clustering' />   
         <param name="numberOfNearestNeighbors" type="integer" value="100"  label="Number of nearest neighbors" help='How many nearest neighbors should be computed for the k-nn graph?' />   
 
         <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
+        <param name='intraChromosomalContactsOnly' type='boolean' truevalue='--intraChromosomalContactsOnly' falsevalue='' label='Intra chromosomal contacts only'/>
+        <conditional name="optional_parameters_conditional">
+            <param name="optional_parameters_selector" type="select" label="Optional parameters">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Optional parameters</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="image_file_format" type="select" label="Image output format">
+                    <option value="png" selected="True">png</option>
+                    <option value="svg">svg</option>
+                    <option value="pdf">pdf</option>
+                </param>
+                <param name="dpi" type="integer" value="300"  label="Dpi of output images" /> 
+                <param name="figuresize" type="text" value="15 6"  label="Figure size" /> 
+                <expand macro="colormap" />
+                <param name="fontsize" type="integer" value="15"  label="Font size" /> 
+
+                <conditional name="coloring_conditional">
+                    <param name="coloring_selector" type="select" label="Provide cell type or batch information">
+                        <option value="no" selected="True">No</option>
+                        <option value="type" >Cell type</option>
+                        <option value="batch" >Batch label</option>
+                    </param>
+                    <when value='no' />
+                    <when value='type' >
+                        <param name='cell_coloring_type' type='data' format='tabular' label='Cell type information' help='A two column list, first colum the cell names as stored in the scool file, second column the associated coloring for the scatter plot and latex table.'/>
+                        <param name='latexTable' type='boolean' truevalue='--latexTable table.txt' falsevalue='' label='Create a latex table with the results'/>
+                    </when>
+                    <when value='batch' >
+                        <param name='cell_coloring_batch' type='data' format='tabular' label='Color scatter plot by batch label' help='A two column list, first colum the cell names as stored in the scool file, second column the associated processing batch for the scatter plot and latex table.'/>
+                        <param name='latexTable' type='boolean' truevalue='--latexTable table.txt' falsevalue='' label='Create a latex table with the results'/>
+                    </when>
+                </conditional>
+
+            </when>
+        </conditional>
     </inputs>
     <outputs>
         <data name="outFileName" from_work_dir="cluster_list.txt" format="txt" label="${tool.name} on ${on_string}: Cluster results"/>
+        <data name="outFileScatter" from_work_dir="scatter" format="png" label="${tool.name} on ${on_string}: Scatter plot">
+            <change_format>
+                <when input="optional_parameters_conditional.image_file_format" value="svg" format="svg" />
+                <when input="optional_parameters_conditional.image_file_format" value="pdf" format="pdf" />
+            </change_format>
+        </data>
+        <data name="outFileLatex" from_work_dir="cluster_list.txt" format="txt" label="${tool.name} on ${on_string}: Latex table">
+            <filter>optional_parameters_conditional.coloring_conditional.latexTable == '--latexTable table.txt'</filter>
+        </data>
+
     </outputs>
     <tests>
         <test>

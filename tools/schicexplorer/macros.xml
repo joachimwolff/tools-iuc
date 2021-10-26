@@ -1,6 +1,6 @@
 <macros>
     <token name="@THREADS@">\${GALAXY_SLOTS:-4}</token>
-    <token name="@WRAPPER_VERSION@">4</token>
+    <token name="@WRAPPER_VERSION@">7</token>
 
      <xml name="requirements">
         <requirements>
@@ -23,7 +23,10 @@
 
     <xml name="citations">
         <citations>
-            <citation type="doi">https://github.com/joachimwolff/scHiCExplorer</citation>
+            <citation type="doi">https://doi.org/10.1093/bioinformatics/btab394</citation>
+            <citation type="doi">https://doi.org/10.1093/bioinformatics/btaa924</citation>
+            <citation type="doi">https://doi.org/10.1093/nar/gkaa220</citation>
+            
             <yield />
         </citations>
     </xml>

@@ -8,18 +8,24 @@
     <command detect_errors="exit_code"><![CDATA[ 
         @BINARY@
         --matrix '$matrix_scooler'
+        --writeOutNames cell_names.txt
         >> matrices_info.txt
     ]]></command>
     <inputs>
         <expand macro="matrix_scooler_macro"/>
+
    </inputs>
     <outputs>
         <data name="outFileName" from_work_dir="matrices_info.txt" format="txt" label="${tool.name} on ${on_string}: Matrix Info"/>
+        <data name="outFileCellNames" from_work_dir="cell_names.txt" format="txt" label="${tool.name} on ${on_string}: Cell names"/>
+
     </outputs>
     <tests>
         <test>
             <param name='matrix_scooler' value='test_matrix.scool' />
             <output name="outFileName" file="scHicInfo/matrices_info.txt" ftype="txt" compare="sim_size" delta="4000"/>
+            <output name="outFileCellNames" file="scHicInfo/cell_names.txt" ftype="txt" compare="sim_size" delta="4000"/>
+        
         </test>
     </tests>
     <help><![CDATA[

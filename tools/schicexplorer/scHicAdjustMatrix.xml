@@ -15,6 +15,9 @@
             --chromosomes $chromosome
         #end if
 
+        #if $createSubmatrix:
+            --createSubmatrix $createSubmatrix
+        #end if
 
         --outFileName adjusted_matrix.scool
 
@@ -31,6 +34,8 @@
                 <option value="remove" >Remove the listed chromosomes</option>
         </param>
         <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
+        <param name='createSubmatrix' type='integer' optional='true' label='Keep only the first n matrices' help='Keep only first n matrices and remove the rest. Good for test data creation.'/>
+
     </inputs>
     <outputs>
         <data name="outFileName" from_work_dir="adjusted_matrix.scool" format="scool" label="${tool.name} on ${on_string}: Adjusted matrix"/>

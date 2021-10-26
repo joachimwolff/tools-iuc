@@ -11,15 +11,36 @@
         --matrix '$matrix_scooler'
 
         --outFileName normalized_matrix.scool
-
+        --normalize $normalize_conditional.normalize_selector
+        #if normalize_conditional.normalize_selector == 'read_count' or normalize_conditional.normalize_selector == 'multiplicative':
+            --value $normalize_conditional.value
+        #end if
+        --setToZeroThreshold $setToZeroThreshold
+        --maximumRegionToConsider $maximumRegionToConsider
         --threads @THREADS@
 
 
 
     ]]></command>
     <inputs>
-        
         <expand macro="matrix_scooler_macro"/>
+         <conditional name="normalize_conditional">
+            <param name="normalize_selector" type="select" label="Normalize based on">
+                <option value="smallest" selected="True">Smallest read coverage of all matrices</option>
+                <option value="read_count">User defined read coverage</option>
+                <option value="multiplicative">User defined multiplicative value</option>
+            </param>
+            <when value='smallest' />
+            <when value='read_count'>
+                <param name='value' type='float' value='1.0' label='User defined read coverage' help='The read count all matrices should be normalized to.'/>
+            </when>
+            <when value='multiplicative'>
+                <param name='value' type='float' value='1.0' label='User defined multiplicative value' help='The multiplicative value all matrices should be normalized with.'/>
+            </when>
+        </conditional>
+        <param name='setToZeroThreshold' type='float' value='1.0' label='Values smaller as this threshold are set to 0.'/>
+        <param name='maximumRegionToConsider' type='integer' value='30000000' label='Maximum region to consider' help='To compute the normalization factor for the normalization mode smallest and read_count, consider only this genomic distance around the diagonal.'/>
+
     </inputs>
     <outputs>
         <data name="outFileName" from_work_dir="normalized_matrix.scool" format="scool" label="${tool.name} on ${on_string}: normalized matrix"/>

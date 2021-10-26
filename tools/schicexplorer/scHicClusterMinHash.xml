@@ -14,18 +14,69 @@
 
         --clusterMethod $clusterMethod_selector
         --numberOfHashFunctions $numberOfHashFunctions
+        --numberOfNearestNeighbors $numberOfNearestNeighbors
+        $intraChromosomalContactsOnly
+
         #if $chromosomes:
             #set $chromosome = ' '.join([ '\'%s\'' % $chrom for $chrom in str($chromosomes).split(' ') ])
             --chromosomes $chromosome
         #end if
 
-        #if $exactModeMinhash:
-            $exactModeMinhash
+        #if $optional_parameters_conditional.optional_parameters_selector == 'yes':
+            $optional_parameters_conditional.exactModeMinhash
+            $optional_parameters_conditional.saveIntermediateRawMatrix
+            --shareOfMatrixToBeTransferred $optional_parameters_conditional.shareOfMatrixToBeTransferred
+            $optional_parameters_conditional.saveMemory
+            $optional_parameters_conditional.noPCA
+            $optional_parameters_conditional.noUMAP
+            --dimensionsPCA $optional_parameters_conditional.dimensionsPCA
+            --distance $optional_parameters_conditional.distance
+            #if $optional_parameters_conditional.optional_parameters_umap_conditional.optional_parameters_umap_selector == 'yes':
+                --umap_n_neighbors $optional_parameters_conditional.optional_parameters_umap_conditional.umap_n_neighbors
+                --umap_n_components $optional_parameters_conditional.optional_parameters_umap_conditional.umap_n_components
+                --umap_metric $optional_parameters_conditional.optional_parameters_umap_conditional.umap_metric_selector
+                --umap_n_epochs $optional_parameters_conditional.optional_parameters_umap_conditional.umap_n_epochs
+                --umap_learning_rate $optional_parameters_conditional.optional_parameters_umap_conditional.umap_learning_rate
+                --umap_init $optional_parameters_conditional.optional_parameters_umap_conditional.umap_init_selector
+                --umap_min_dist $optional_parameters_conditional.optional_parameters_umap_conditional.umap_min_dist
+                --umap_spread $optional_parameters_conditional.optional_parameters_umap_conditional.umap_spread
+                --umap_set_op_mix_ratio $optional_parameters_conditional.optional_parameters_umap_conditional.umap_set_op_mix_ratio
+                --umap_local_connectivity $optional_parameters_conditional.optional_parameters_umap_conditional.umap_local_connectivity
+                --umap_repulsion_strength $optional_parameters_conditional.optional_parameters_umap_conditional.umap_repulsion_strength
+                --umap_negative_sample_rate $optional_parameters_conditional.optional_parameters_umap_conditional.umap_negative_sample_rate
+                --umap_transform_queue_size $optional_parameters_conditional.optional_parameters_umap_conditional.umap_transform_queue_size
+                #if $optional_parameters_conditional.optional_parameters_umap_conditional.umap_a:
+                    --umap_a $optional_parameters_conditional.optional_parameters_umap_conditional.umap_a
+                #end if
+                #if $optional_parameters_conditional.optional_parameters_umap_conditional.umap_b:
+                    --umap_b $optional_parameters_conditional.optional_parameters_umap_conditional.umap_b
+                #end if
+                $optional_parameters_conditional.optional_parameters_umap_conditional.umap_angular_rp_forest
+                --umap_target_n_neighbors $optional_parameters_conditional.optional_parameters_umap_conditional.umap_target_n_neighbors
+                --umap_target_metric $optional_parameters_conditional.optional_parameters_umap_conditional.umap_target_metric_selector
+                --umap_target_weight $optional_parameters_conditional.optional_parameters_umap_conditional.umap_target_weight
+                $optional_parameters_conditional.optional_parameters_umap_conditional.umap_force_approximation_algorithm
+                $optional_parameters_conditional.optional_parameters_umap_conditional.umap_verbose
+                $optional_parameters_conditional.optional_parameters_umap_conditional.umap_unique
+            #end if
+
+            #if $optional_parameters_conditional.optional_parameters_scatter_conditional.optional_parameters_scatter_selector == 'yes':
+                --dpi $optional_parameters_conditional.optional_parameters_scatter_conditional.dpi
+                --figuresize $optional_parameters_conditional.optional_parameters_scatter_conditional.figuresize
+                --colorMap $optional_parameters_conditional.optional_parameters_scatter_conditional.colormap
+                --fontsize $optional_parameters_conditional.optional_parameters_scatter_conditional.fontsize
+                #if $optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.coloring_selector == 'type':
+                    --cell_coloring_type $optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.cell_coloring_type
+                    --latexTable latex.tex 
+                #else if $optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.coloring_selector == 'batch':
+                    --cell_coloring_batch $optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.cell_coloring_batch
+                    --latexTable latex.tex 
+                #end if
+            #end if
         #end if
 
         --outFileName cluster_list.txt
-        --numberOfNearestNeighbors $numberOfNearestNeighbors
-
+        --createScatterPlot scatter.$optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.image_file_format
         --threads @THREADS@
 
 
@@ -44,11 +95,124 @@
         <param name="numberOfNearestNeighbors" type="integer" value="100"  label="Number of nearest neighbors" help='How many nearest neighbors should be computed for the k-nn graph?' />   
 
         <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
-        <param name='exactModeMinhash' type='boolean' truevalue='--exactModeMinHash' label='The MinHash algorithm computes additional the exact euclidean distance.'/>
+        <param name='intraChromosomalContactsOnly' type='boolean' truevalue='--intraChromosomalContactsOnly' falsevalue='' label='Intra chromosomal contacts only'/>
+        
+        <conditional name="optional_parameters_conditional">
+            <param name="optional_parameters_selector" type="select" label="Optional parameters">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Optional parameters</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name='exactModeMinhash' type='boolean' truevalue='--exactModeMinHash' label='The MinHash algorithm computes additional the exact euclidean distance.'/>
+                <param name='saveIntermediateRawMatrix' type='boolean' truevalue='--saveIntermediateRawMatrix raw.npz' falsevalue='' label='Save the intermediate raw matrix'/>
+                <param name='shareOfMatrixToBeTransferred' type='float' value='0.25' label='Share of matrix to be transferred' help='Which share of rows shall be transferred from Python to C++ at once. If `--saveMemory` is active, value is interpreted as the share to loaded at once to memory. Values between 0 and 1, the more are transferred at once, the larger the memory usage is. The less rows are transferred, the slower the computation is.'/>
+                <param name='saveMemory' type='boolean' truevalue='--saveMemory' falsevalue='' label='Save memory' help='Load data only with one core, this method saves memory but is significantly slower.'/>
+                <param name='noPCA' type='boolean' truevalue='--noPCA' falsevalue='' label='Do not computes PCA on top of a k-nn.'/>
+                <param name='noUMAP' type='boolean' truevalue='--noUMAP' falsevalue='' label='Do not computes UMP on top of a k-nn/PCA.'/>
+                <param name='dimensionsPCA' type='integer' value='100' label='PCA dimensions' help='The number of dimensions from the PCA matrix that should be considered for clustering. Can improve the cluster result.'/>
+                <param name='distance' type='float' value='' label='Distance' help='Contact distance to consider for the approximate k-nn'/>
+                <conditional name="optional_parameters_umap_conditional">
+                    <param name="optional_parameters_umap_selector" type="select" label="Optional parameters for UMAP">
+                        <option value="no" selected="True">Do not adjust</option>
+                        <option value="yes">Optional parameters</option>
+                    </param>
+                    <when value='no' />
+                    <when value='yes'>
+                        <param name='umap_n_neighbors' type='integer' value='30' label='UMAP neighbors' help='Number of neighbors for the UMAP algorithm to consider'/>
+                        <param name='umap_n_components' type='integer' value='2' label='UMAP components' help='Number of components for the UMAP algorithm to reduce the dimensions to.'/>
+                        <param name="umap_metric_selector" type="select" label="UMAP metric">
+                            <option value="canberra" selected="True">Canberra</option>
+                            <option value="euclidean">Euclidean</option>
+                            <option value="manhattan">Manhattan</option>
+                            <option value="chebyshev">Chebyshev</option>
+                            <option value="minkowski">Minkowski</option>
+                            <option value="braycurtis">Braycurtis</option>
+                            <option value="haversine">Haversine</option>
+                            <option value="mahalanobis">Mahalanobis</option>
+                            <option value="wminkowski">Wminkowski</option>
+                            <option value="seuclidean">Seuclidean</option>
+                            <option value="cosine">Cosine</option>
+                            <option value="correlation">Correlation</option>
+                        </param>
+                        <param name='umap_n_epochs' type='integer' value='' label='UMAP epochs' help='Number of epochs'/>
+                        <param name='umap_learning_rate' type='float' value='1.0' label='UMAP learning rate'/>
+                        <param name="umap_init_selector" type="select" label="UMAP init">
+                            <option value="spectral" selected="True">Spectral</option>
+                            <option value="random">Random</option>
+                        </param>
+                        <param name='umap_min_dist' type='float' value='0.3' label='Minimum distance of two neighbors'/>
+                        <param name='umap_spread' type='float' value='1.0' label='Spread'/>
+                        <param name='umap_set_op_mix_ratio' type='float' value='1.0' label='Set op mix ratio'/>
+                        <param name='umap_local_connectivity' type='float' value='1.0' label='Local connectivity'/>
+                        <param name='umap_repulsion_strength' type='float' value='1.0' label='Repulsion strength'/>
+                        <param name='umap_negative_sample_rate' type='integer' value='5' label='Negative sample rate'/>
+                        <param name='umap_transform_queue_size' type='float' value='4.0' label='Transform queue size'/>
+                        <param name='umap_a' type='float' value='' label='a'/>
+                        <param name='umap_b' type='float' value='' label='b'/>
+                        <param name='umap_angular_rp_forest' type='boolean' truevalue='--umap_angular_rp_forest' falsevalue='' label='Angular rp forest'/>
+                        <param name='umap_target_n_neighbors' type='integer' value='-1' label='target number of neighbors'/>
+                        <param name="umap_target_metric_selector" type="select" label="UMAP target metric">       
+                            <option value="categorical" selected="True">Categorical</option>
+                        </param>
+                        <param name='umap_target_weight' type='float' value='0.5' label='Target weight'/>
+                        <param name='umap_force_approximation_algorithm' type='boolean' truevalue='--umap_force_approximation_algorithm' falsevalue='' label='Force approximation algorithm'/>
+                        <param name='umap_verbose' type='boolean' truevalue='--umap_verbose' falsevalue='' label='Verbose'/>
+                        <param name='umap_unique' type='boolean' truevalue='--umap_unique' falsevalue='' label='Unique'/>
+                    </when>
+                </conditional>
+                <conditional name="optional_parameters_scatter_conditional">
+                     <param name="optional_parameters_scatter_selector" type="select" label="Optional parameters for the scatter plot">
+                        <option value="no" selected="True">Do not adjust</option>
+                        <option value="yes">Optional parameters</option>
+                    </param>
+                    <when value='no' />
+                    <when value='yes'>
+                        <param name="dpi" type="integer" value="300"  label="Dpi of output images" /> 
+                        <param name="figuresize" type="text" value="15 6"  label="Figure size" /> 
+                        <expand macro="colormap" />
+                        <param name="fontsize" type="integer" value="15"  label="Font size" /> 
+
+                        <conditional name="coloring_conditional">
+                            <param name="coloring_selector" type="select" label="Provide cell type or batch information">
+                                <option value="no" selected="True">No</option>
+                                <option value="type" >Cell type</option>
+                                <option value="batch" >Batch label</option>
+                            </param>
+                            <when value='no' />
+                            <when value='type' >
+                                <param name='cell_coloring_type' type='data' format='tabular' label='Cell type information' help='A two column list, first colum the cell names as stored in the scool file, second column the associated coloring for the scatter plot and latex table.'/>
+                                <param name='latexTable' type='boolean' truevalue='--latexTable table.txt' falsevalue='' label='Create a latex table with the results'/>
+                            </when>
+                            <when value='batch' >
+                                <param name='cell_coloring_batch' type='data' format='tabular' label='Color scatter plot by batch label' help='A two column list, first colum the cell names as stored in the scool file, second column the associated processing batch for the scatter plot and latex table.'/>
+                                <param name='latexTable' type='boolean' truevalue='--latexTable table.txt' falsevalue='' label='Create a latex table with the results'/>
+                            </when>
+                            <param name="image_file_format" type="select" label="Image output format">
+                                <option value="png" selected="True">png</option>
+                                <option value="svg">svg</option>
+                                <option value="pdf">pdf</option>
+                            </param>
+                        </conditional>
+                    </when>
+                </conditional>
+            </when>
+        </conditional>
+        
 
     </inputs>
     <outputs>
         <data name="outFileName" from_work_dir="cluster_list.txt" format="txt" label="${tool.name} on ${on_string}: Cluster results"/>
+        <data name="outFileScatter" from_work_dir="scatter" format="png" label="${tool.name} on ${on_string}: Scatter plot">
+            <change_format>
+                <when input="optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.image_file_format" value="svg" format="svg" />
+                <when input="optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.image_file_format" value="pdf" format="pdf" />
+            </change_format>
+        </data>
+        <data name="outFileLatex" from_work_dir="cluster_list.txt" format="txt" label="${tool.name} on ${on_string}: Latex table">
+            <filter>optional_parameters_conditional.optional_parameters_scatter_conditional.coloring_conditional.latexTable == '--latexTable table.txt'</filter>
+        </data>
+     
     </outputs>
     <tests>
         <test>
