@@ -9,17 +9,25 @@
         @BINARY@
 
         --matrix $matrix_scooler
-        #if $chromosomes:
-            #set $chromosome = ' '.join([ '\'%s\'' % $chrom for $chrom in str($chromosomes).split(' ') ])
-            --chromosomes $chromosome
+        #if $chromosome_region_conditional.chromosome_region_selection == 'chromosomes':
+            #if $chromosome_region_conditional.chromosomes:
+                #set $chromosome = ' '.join([ '\'%s\'' % $chrom for $chrom in str($chromosome_region_conditional.chromosomes).split(' ') ])
+                --chromosomes $chromosome
+            #end if
+        #else if $chromosome_region_conditional.chromosome_region_selection == 'region':
+            #if $chromosome_region_conditional.region:
+                --region $chromosome_region_conditional.region
+            #end if
         #end if
-        
         #if $colormap:
             --colorMap $colormap
         #end if
         #if $dpi:
             --dpi $dpi
         #end if 
+        --fontsize $fontsize
+        $no_header
+        $individual_scale
         --outFileName plot.$image_file_format
 
         --threads @THREADS@
@@ -29,9 +37,26 @@
     ]]></command>
     <inputs>
         <expand macro="matrix_scooler_macro"/>
-        <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
+        <conditional name="chromosome_region_conditional">
+            <param name='chromosome_region_selection' label='Restrict plot' type='select'>
+                <option value='no' selected='true'>All data</option>
+                <option value='chromosomes'>Chromosomes</option>
+                <option value='region'>region</option>
+            </param>
+            <when value='no' />
+            <when value='chromosomes' >
+                <param name='chromosomes' type='text' label='List of chromosomes to consider' help='Please separate the chromosomes by space'/>
+            </when>
+            <when value='region'>
+                <param name='region' type='text' label='Region to consider' help='Please use the format chr:10-11'/>
+            </when>
+        </conditional>
         <expand macro="colormap" />
-        <param name='dpi' type='integer' label='DPI for image' help='Change the default resolution of the plot.' optional='true'/>
+        <param name='dpi' type='integer' label='DPI for the image' help='Change the default resolution of the plot.' optional='true'/>
+        <param name='fontsize' type='integer' value='10' label='Font size for the image' help='Change the default font size of the plot' optional='true'/>
+        <param name='no_header' type='boolean' truevalue='--no_header'  falsevalue='' label='Do not plot a header'/>
+        <param name='log1p' type='boolean' truevalue='--log1p'  falsevalue='' label='log1p' help='Apply log1p operation to plot the matrices.'/>
+        <param name='individual_scale' type='boolean' truevalue='--individual_scale'  falsevalue='' label='Individual scale' help='Use an individual value range for all cluster consensus matrices. If not set, the same scale is applied to all.'/>
         
         <param name="image_file_format" type="select" label="Image output format">
             <option value="png" selected="True">png</option>

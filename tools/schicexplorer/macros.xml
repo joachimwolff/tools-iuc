@@ -20,7 +20,6 @@
     <token name="@ESCAPE_IDENTIFIER_FASTQ@"><![CDATA[re.sub('[^\s\w\.]', '_', str($fastq.element_identifier))]]></token>
     <token name="@ESCAPE_IDENTIFIER_SCOOL@"><![CDATA[re.sub('[^\s\w\.]', '_', str($matrix_scooler.element_identifier))]]></token>
     <token name="@ESCAPE_IDENTIFIER_M@"><![CDATA[re.sub('[^\s\w\-\.]', '_', str($m.element_identifier))]]></token>
-
     <xml name="citations">
         <citations>
             <citation type="doi">https://doi.org/10.1093/bioinformatics/btab394</citation>

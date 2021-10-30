@@ -1,0 +1,59 @@
+<tool id="schicexplorer_schictxttoscool" name="@BINARY@" version="@WRAPPER_VERSION@.0">
+    <description>convert scHi-C matrices from text files to scool</description>
+    <macros>
+        <token name="@BINARY@">scHicTxtToSCool</token>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command detect_errors="exit_code"><![CDATA[
+        #import re
+        @BINARY@
+
+        #set $m = ' '.join([ '\'%s\'' % @ESCAPE_IDENTIFIER_M@ for $m in $matrices_txt ])
+
+        --matrices $m
+        --chromosomeSizes $chromosomeSizes
+        --resolution $resolution
+        --outFileName outfile.scool
+        --threads @THREADS@
+
+    ]]></command>
+    <inputs>
+        <param name='matrices_txt' type="data" format="txt"  label="Matricies to import" multiple="true"/>
+        <param name='chromosomeSizes' type="data" format="tabular"  label="Chromosome sizes" help='A two column file containing the chromosomes and their sizes'/>
+        <param name='resolution' type='integer' value='10000' label='Resolution' help='The resolution of Hi-C interaction matrices.'/>
+    </inputs>
+    <outputs>
+        <data name="outFileName" from_work_dir="outfile.scool" format="scool" label="${tool.name} on ${on_string}: imported scHi-C matrix"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name='matrix_scooler' value='test_matrix.scool' />
+            <param name='clusterMethod_selector' value='keep' />
+            <param name='chromosomes' value='chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chrX' />
+            <output name="outFileName" ftype="scool">
+                <assert_contents>
+                    <has_h5_keys keys='Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz, Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/bins, 
+                    Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/bins/chrom, Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/bins/end, 
+                    Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/bins/start, Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/chroms, 
+                    Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/chroms/length, Diploid_1_CGTACTAG_AAGGAGTA_R1fastqgz/chroms/name, 
+                    Diploid_2_AGGCAGAA_AAGGAGTA_R1fastqgz/pixels/count'/>
+                </assert_contents>
+            </output>
+        </test>
+       
+    </tests>
+    <help><![CDATA[
+
+Adjust all matrices
+===================
+
+scHicAdjustMatrix is a tool to keep or remove a list of chromosomes of all Hi-C matrices stored in the scool file.
+
+For more information about scHiCExplorer please consider our documentation on readthedocs.io_
+
+.. _readthedocs.io: http://schicexplorer.readthedocs.io/
+]]></help>
+    <expand macro="citations" />
+
+</tool>

@@ -1,0 +1,179 @@
+<tool id="schicexplorer_schicclusterminhashhyperopt" name="@BINARY@" version="@WRAPPER_VERSION@.0">
+    <description>compute optimal parameters for scHicClusterMinHash/description>
+    <macros>
+        <token name="@BINARY@">scHicClusterMinHashHyperopt</token>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command detect_errors="exit_code"><![CDATA[
+        @BINARY@
+
+        --matrix '$matrix_scooler'
+        --cellColor $cell_coloring
+        --outputFileName hyperoptMinHash_result.txt
+
+        --runs $runs
+        --nearestNeighbors $nearestNeighbors
+
+        #if $numberOfHashFunctions_conditional.numberOfHashFuncitons_selector == 'yes':
+            --numberOfHashfunctions $numberOfHashFunctions_conditional.numberOfHashfunctionsLower $numberOfHashFunctions_conditional.numberOfHashfunctionsUpper $numberOfHashFunctions_conditional.numberOfHashfunctionsStep
+        #end if
+
+        #if $numberOfClusters_conditional.numberOfClusters_selector == 'yes':
+            --numberOfClusters $numberOfClusters_conditional.numberOfClustersLower $numberOfClusters_conditional.numberOfClustersUpper $numberOfClusters_conditional.numberOfClustersStep
+        #end if
+
+        #if $numberOfPCADimensions_conditional.numberOfPCADimensions_selector == 'yes':
+            --numberPCADimensions $numberOfPCADimensions_conditional.numberOfPCADimensionsLower $numberOfPCADimensions_conditional.numberOfPCADimensionsUpper $numberOfPCADimensions_conditional.numberOfPCADimensionsStep
+        #end if
+
+        #if $numberOfUMAPNeighbors_conditional.numberOfUMAPNeighbors_selector == 'yes':
+            --umap_numberOfNeighbors $numberOfUMAPNeighbors_conditional.numberOfUMAPNeighborsLower $numberOfUMAPNeighbors_conditional.numberOfUMAPNeighborsUpper $numberOfUMAPNeighbors_conditional.numberOfUMAPNeighborsStep
+        #end if
+        #if $numberOfUMAPComponents_conditional.numberOfUMAPComponents_selector == 'yes':
+            --umap_n_components $numberOfUMAPComponents_conditional.numberOfUMAPComponentsLower $numberOfUMAPComponents_conditional.numberOfUMAPComponentsUpper $numberOfUMAPComponents_conditional.numberOfUMAPComponentsStep
+        #end if
+        #if $numberOfUMAPMinDist_conditional.numberOfUMAPMinDist_selector == 'yes':
+            --umap_min_dist $numberOfUMAPMinDist_conditional.numberOfUMAPMinDistLower $numberOfUMAPMinDist_conditional.numberOfUMAPMinDistUpper
+        #end if
+
+        --method $hyperoptMethod_selector
+        
+        --threads @THREADS@
+    ]]></command>
+    <inputs>
+        
+        <expand macro="matrix_scooler_macro"/>
+        <param name="numberOfClusters" type="integer" value="7"  label="Number of clusters" help='How many clusters should be computed by kmeans or spectral clustering' />   
+        <param name='cell_coloring' type='data' format='tabular' label='Cell information' help='A two column list, first colum the cell names as stored in the scool file, second column the associated cell type or cell cycle stage.'/>
+        
+        <param name="runs" type="integer" value="100"  label="Number of runs" help='How many iterations the hyperparameter optimization should run.' />   
+        <param name="nearestNeighbors" type="integer" value="1000"  label="Number of neighbors" help='How many neighbors the approximate k-nn should use.' />   
+        
+        <conditional name="numberOfHashFunctions_conditional">
+            <param name="numberOfHashFuncitons_selector" type="select" label="Change number of hash function search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfHashfunctionsLower" type="integer" value="1000"  label="Number of neighbors lower search bound" help='The lower boundary for the number of possible hash function for MinHash.' />   
+                <param name="numberOfHashfunctionsUpper" type="integer" value="20000"  label="Number of neighbors upper search bound" help='The upper boundary for the number of possible hash function for MinHash.' />   
+                <param name="numberOfHashfunctionsStep" type="integer" value="1000"  label="Step size" help='The step sizze for the number of possible hash function for MinHash.' />   
+            </when>
+        </conditional>
+
+        <conditional name="numberOfClusters_conditional">
+            <param name="numberOfClusters_selector" type="select" label="Change number of clusters search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfClustersLower" type="integer" value="1000"  label="Number of clusters lower search bound" help='The lower boundary for the number of possible clusters.' />   
+                <param name="numberOfClustersUpper" type="integer" value="20000"  label="Number of clusters upper search bound" help='The upper boundary for the number of possible clusters.' />   
+                <param name="numberOfClustersStep" type="integer" value="1000"  label="Step size" help='The step sizze for the number of possible clusters.' />   
+            </when>
+        </conditional>
+
+        <conditional name="numberOfPCADimensions_conditional">
+            <param name="numberOfPCADimensions_selector" type="select" label="Change number of PCA dimensions search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfPCADimensionsLower" type="integer" value="1000"  label="Number of PCA dimensions lower search bound" help='The lower boundary for the number of possible PCA dimensions.' />   
+                <param name="numberOfPCADimensionsUpper" type="integer" value="20000"  label="Number of PCA dimensions upper search bound" help='The upper boundary for the number of possible PCA dimensions.' />   
+                <param name="numberOfPCADimensionsStep" type="integer" value="1000"  label="Step size" help='The step sizze for the number of possible PCA dimensions.' />   
+            </when>
+        </conditional>
+   
+        <conditional name="numberOfUMAPNeighbors_conditional">
+            <param name="numberOfUMAPNeighbors_selector" type="select" label="Change number of UMAP neighbors search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfUMAPNeighborsLower" type="integer" value="1000"  label="Number of UMAP neighbors lower search bound" help='The lower boundary for the number of possible UMAP neighbors.' />   
+                <param name="numberOfUMAPNeighborsUpper" type="integer" value="20000"  label="Number of UMAP neighbors upper search bound" help='The upper boundary for the number of possible UMAP neighbors.' />   
+                <param name="numberOfUMAPNeighborsStep" type="integer" value="1000"  label="Step size" help='The step sizze for the number of possible UMAP neighbors.' />   
+            </when>
+        </conditional>
+
+        <conditional name="numberOfUMAPComponents_conditional">
+            <param name="numberOfUMAPComponents_selector" type="select" label="Change number of UMAP neighbors search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfUMAPComponentsLower" type="integer" value="1000"  label="Number of UMAP neighbors lower search bound" help='The lower boundary for the number of possible UMAP neighbors.' />   
+                <param name="numberOfUMAPComponentsUpper" type="integer" value="20000"  label="Number of UMAP neighbors upper search bound" help='The upper boundary for the number of possible UMAP neighbors.' />   
+                <param name="numberOfUMAPComponentsStep" type="integer" value="1000"  label="Step size" help='The step sizze for the number of possible UMAP neighbors.' />   
+            </when>
+        </conditional>
+
+        <conditional name="numberOfUMAPMinDist_conditional">
+            <param name="numberOfUMAPMinDist_selector" type="select" label="Change number of UMAP neighbors search range">
+                <option value="no" selected="True">Do not adjust</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value='no' />
+            <when value='yes'>
+                <param name="numberOfUMAPMinDistLower" type="integer" value="1000"  label="Number of UMAP neighbors lower search bound" help='The lower boundary for the number of possible UMAP neighbors.' />   
+                <param name="numberOfUMAPMinDistUpper" type="integer" value="20000"  label="Number of UMAP neighbors upper search bound" help='The upper boundary for the number of possible UMAP neighbors.' />   
+            </when>
+        </conditional>
+
+        <param name="hyperoptMethod_selector" type="select" label="Search method of hyperopt">
+                <option value="random" selected="True">Random</option>
+                <option value="tpe">tpe</option>
+                <option value="atpe">atpe</option>
+
+            </param>
+
+    </inputs>
+    <outputs>
+        <data name="outFileName" from_work_dir="hyperoptMinHash_result.txt" format="txt" label="${tool.name} on ${on_string}: Hyperopt result MinHash"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name='matrix_scooler' value='test_matrix.scool' />
+            <param name='clusterMethod_selector' value='kmeans' />
+            <param name='numberOfClusters' value='3' />
+            <param name='distanceShortRange' value='2000000' />
+            <param name='distanceLongRange' value='12000000' />
+
+            <output name="outFileName" file="scHicClusterSVL/cluster_kmeans.txt" ftype="txt" compare="sim_size" delta="4000"/>
+        </test>
+
+        <test>
+            <param name='matrix_scooler' value='test_matrix.scool' />
+            <param name='clusterMethod_selector' value='spectral' />
+            <param name='numberOfClusters' value='3' />
+            <param name='distanceShortRange' value='2000000' />
+            <param name='distanceLongRange' value='12000000' />
+
+            <output name="outFileName" file="scHicClusterSVL/cluster_spectral.txt" ftype="txt" compare="sim_size" delta="4000"/>
+        </test>
+   
+    </tests>
+    <help><![CDATA[
+
+Clustering with dimension reduction via short vs long range ratio
+=================================================================
+
+scHicClusterSVL uses kmeans or spectral clustering to associate each cell to a cluster and therefore to its cell cycle. 
+The clustering is applied on dimension reduced data based on the ratio of short vs long range contacts per chromosome. This approach reduces the number of dimensions from samples * (number of bins)^2 to samples * (number of chromosomes). 
+Please consider also the other clustering and dimension reduction approaches of the scHicExplorer suite such as `scHicCluster`, `scHicClusterMinHash` and `scHicClusterSVL`. They can give you better results, 
+can be faster or less memory demanding.
+
+For more information about scHiCExplorer please consider our documentation on readthedocs.io_
+
+.. _readthedocs.io: http://schicexplorer.readthedocs.io/
+]]></help>
+    <expand macro="citations" />
+
+</tool>

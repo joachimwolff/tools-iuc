@@ -1,0 +1,77 @@
+<tool id="schicexplorer_schicconvertformat" name="@BINARY@" version="@WRAPPER_VERSION@.0">
+    <description>convert scool files to other single-cell file formats</description>
+    <macros>
+        <token name="@BINARY@">scHicConvertFormat</token>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command detect_errors="exit_code"><![CDATA[
+        mkdir outputFolder &&
+        @BINARY@
+
+        --matrix '$matrix_scooler'
+
+        --outputFolder outputFolder
+        --outputCellNameFile cellNameFile.txt
+        --outputChromosomeSize chromosomeSize.txt
+
+        --format $format_selector
+
+
+        --threads @THREADS@
+    ]]></command>
+    <inputs>
+        
+        <expand macro="matrix_scooler_macro"/>
+        <param name="format_selector" type="select" label="Output format">
+                <option value="schicluster" selected="True">scHiCluster (Zhou 2019 et al.)</option>
+                <option value="sparse-matrix-files" >Sparse matrix files</option>
+        </param>
+    </inputs>
+    <outputs>
+        <collection name="cellFilesCollection" type="list" label="Cell files">
+            <discover_datasets pattern="__name__" format="tabular" directory="outputFolder" />
+        </collection>
+        <data name="outFileNameCellName" from_work_dir="cellNameFile.txt" format="txt" label="${tool.name} on ${on_string}: cell names"/>
+        <data name="outFileNameChromosomeSize" from_work_dir="chromosomeSize.txt" format="txt" label="${tool.name} on ${on_string}: chromosome sizes"/>
+    
+    </outputs>
+    <tests>
+        <test>
+            <param name='matrix_scooler' value='test_matrix.scool' />
+            <param name='clusterMethod_selector' value='kmeans' />
+            <param name='numberOfClusters' value='3' />
+            <param name='distanceShortRange' value='2000000' />
+            <param name='distanceLongRange' value='12000000' />
+
+            <output name="outFileName" file="scHicClusterSVL/cluster_kmeans.txt" ftype="txt" compare="sim_size" delta="4000"/>
+        </test>
+
+        <test>
+            <param name='matrix_scooler' value='test_matrix.scool' />
+            <param name='clusterMethod_selector' value='spectral' />
+            <param name='numberOfClusters' value='3' />
+            <param name='distanceShortRange' value='2000000' />
+            <param name='distanceLongRange' value='12000000' />
+
+            <output name="outFileName" file="scHicClusterSVL/cluster_spectral.txt" ftype="txt" compare="sim_size" delta="4000"/>
+        </test>
+   
+    </tests>
+    <help><![CDATA[
+
+Clustering with dimension reduction via short vs long range ratio
+=================================================================
+
+scHicClusterSVL uses kmeans or spectral clustering to associate each cell to a cluster and therefore to its cell cycle. 
+The clustering is applied on dimension reduced data based on the ratio of short vs long range contacts per chromosome. This approach reduces the number of dimensions from samples * (number of bins)^2 to samples * (number of chromosomes). 
+Please consider also the other clustering and dimension reduction approaches of the scHicExplorer suite such as `scHicCluster`, `scHicClusterMinHash` and `scHicClusterSVL`. They can give you better results, 
+can be faster or less memory demanding.
+
+For more information about scHiCExplorer please consider our documentation on readthedocs.io_
+
+.. _readthedocs.io: http://schicexplorer.readthedocs.io/
+]]></help>
+    <expand macro="citations" />
+
+</tool>
