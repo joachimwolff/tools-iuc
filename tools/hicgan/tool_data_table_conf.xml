@@ -1,0 +1,6 @@
+<tables>
+    <table name="hicgan_models" comment_char="#" allow_duplicate_entries="False">
+        <columns>value,name,genome,celltype,description,path,binsize,batchsize,windowsize</columns>
+        <file path="/home/joachim/src/tools-iuc/tools/hicgan/tool-data/hicgan_models.loc"/>
+    </table>
+</tables>
