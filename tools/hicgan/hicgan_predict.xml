@@ -1,37 +1,53 @@
-<tool id="hicgan_predict" name="HiC-GAN Predict" version="1.0.0" profile="23.0">
-    <description>Predict Hi-C contact maps using HiC-GAN</description>
+<tool id="hicgan_predict" name="Hi-cGAN Predict" version="1.0.0" profile="23.0">
+    <description>Predict Hi-C contact maps using Hi-cGAN</description>
     <requirements>
-        <requirement type="package">hic-gan</requirement>
+        <requirement type="package" version="3.11">python</requirement>
+        <requirement type="package">click</requirement>
+        <requirement type="package">cooler</requirement>
+        <requirement type="package">graphviz</requirement>
+        <requirement type="package">matplotlib</requirement>
+        <requirement type="package">numpy</requirement>
+        <requirement type="package">pandas</requirement>
+        <requirement type="package">pybigwig</requirement>
+        <requirement type="package">pydot</requirement>
+        <requirement type="package">scikit-learn</requirement>
+        <requirement type="package">scipy</requirement>
+        <requirement type="package">tqdm</requirement>
+        <requirement type="package">optuna</requirement>
+        <requirement type="package">icecream</requirement>
+        <requirement type="package">ray-tune</requirement>
+        <requirement type="package">hyperopt</requirement>
+        <requirement type="package" version="2.15">tensorflow-gpu</requirement>
+
     </requirements>
     <command detect_errors="exit_code">
         <![CDATA[
-        mkdir -p input_folder/
-        for bw in $bigwigs; do
-            cp "$bw" input_folder/
-        done
-        input_folder="input_folder/"
-        hicPredict \
-            --trainedModel "${model.path}" \
-            --predictionChromatinFolders '$input_folder' \
-            --predictionChromosomes "$(echo '$chromosomes' | tr ',' ' ')" \
-            --matrixOutputName '$output' \
-            --parameterOutputFile '$param_output' \
-            -o . \
-            --multiplier 2000 \
-            --binSize "${model.binsize}" \
-            -bs "${model.batchsize}" \
-            --windowSize "${model.windowsize}"
+        bash $__tool_directory__/run_tool.sh && 
+        mkdir -p input_folder/ &&
+        #for $bw in $bigwigs
+        cp "$bw" input_folder/CTCF.bw &&
+        #end for
+        echo "${model.fields.path}" &&
+        ls -lah "${model.fields.path}" &&
+        ln -s "${model.fields.path}" model.keras &&
+        #set $input_folder="input_folder/"
+        which hicPredict &&
+        ls -lah input_folder/ &&
+        hicPredict --trainedModel model.keras
+            --predictionChromosomesFolders '$input_folder' 
+            --predictionChromosomes "${chromosomes.replace(',', ' ')}" 
+            --matrixOutputName '$output' 
+            --parameterOutputFile '$param_output' 
+            -o . 
+            --multiplier 2000 
+            --binSize "${model.fields.binsize}" 
+            --batchSize "${model.fields.batchsize}" 
+            --windowSize "${model.fields.windowsize}"
         ]]>
     </command>
     <inputs>
         <param name="model" type="select" label="Preinstalled Model">
-            <options from_data_table="hicgan_models">
-                <column name="value" index="0"/>
-                <column name="name"  index="1"/>
-                <column name="genome" index="2"/>
-                <column name="celltype" index="3"/>
-                <column name="description" index="4"/>
-            </options>
+            <options from_data_table="hicgan_models" />
         </param>
         <param name="bigwigs" type="data" format="bigwig" multiple="true" label="Input Chromatin Files" help="Select one or more bigWig files as input."/>
         <param name="chromosomes" type="text" label="Prediction Chromosomes (comma-separated)" value="chr4" help="Enter chromosomes separated by commas, e.g., chr1,chr2,chr3"/>

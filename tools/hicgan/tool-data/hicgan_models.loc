@@ -1,3 +1,3 @@
 #value	name	genome	celltype	description	path	binsize	batchsize	windowsize
-model1	GM12878CTCF	hg19	GM12878	GM12878 trained with CTCF on all chromosomes except chr19	/home/joachim/src/tools-iuc/tools/hicgan/tool-data/gm12878_train_all_w64_25kb_CTCF.keras	25000	1	64
-model2	K562CTCF	hg19	K562	K562 trained with CTCF on all chromosomes except chr19	/home/joachim/src/tools-iuc/tools/hicgan/tool-data/k562_train_all_w64_25kb_CTCF.keras	25000	1	64
+model1	GM12878CTCF	hg19	GM12878	GM12878 trained with CTCF on all chromosomes except chr19 25kb	/home/joachim/src/tools-iuc/tools/hicgan/tool-data/gm12878_train_all_w64_25kb_CTCF.keras	25000	1	64
+model2	K562CTCF	hg19	K562	K562 trained with CTCF on all chromosomes except chr19 25kb	/home/joachim/src/tools-iuc/tools/hicgan/tool-data/k562_train_all_w64_25kb_CTCF.keras	25000	1	64
