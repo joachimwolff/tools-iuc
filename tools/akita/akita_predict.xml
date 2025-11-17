@@ -1,0 +1,65 @@
+<tool id="akita_predict" name="Akita Predict" version="0.6" profile="23.0">
+    <description>Predict Hi-C contact maps using Hi-cGAN</description>
+    <requirements>
+        <requirement type="package" version="3.9">python</requirement>
+        <requirement type="package">pytorch</requirement>
+        <requirement type="package">pytorch-cuda</requirement>
+        <requirement type="package">cooler</requirement>
+        <requirement type="package">torchvision</requirement>
+        <requirement type="package">torchmetrics</requirement>
+        <requirement type="package">matplotlib</requirement>
+        <requirement type="package">numpy</requirement>
+        <requirement type="package">pandas</requirement>
+        <requirement type="package">pybigwig</requirement>
+        <requirement type="package">omegaconf</requirement>
+        <requirement type="package">scikit-learn</requirement>
+        <requirement type="package">scipy</requirement>
+        <requirement type="package">tqdm</requirement>
+
+    </requirements>
+    <command detect_errors="exit_code">
+        <![CDATA[
+        bash $__tool_directory__/run_tool.sh && 
+        mkdir -p akita_data/fasta &&
+
+        cp -r $fasta_seq akita_data/fasta/ &&
+
+        echo "${model.fields.path}" &&
+        ls -lah "${model.fields.path}" &&
+        ln -s "${model.fields.path}" model.keras &&
+        #set $input_folder_bigwig="corigami_data/bigwig/"
+        #set $input_folder_fasta="akita_data/fasta/"
+
+        python predict.py --region --output outputFolder 
+
+        ]]>
+    </command>
+    <inputs>
+        <param name="model" type="select" label="Preinstalled Model">
+            <options from_data_table="akita_models" />
+        </param>
+
+        <param name="fasta_seq" type="data" format="fasta" multiple="false" label="Input DNA sequence" help="Select a DNA sequence as FASTA file."/>
+
+        <param name="region" type="text" label="Prediction region" value="chr2" help="Enter the region to predict e.g. chr12:115163136-116211712"/>
+        <!-- <param name="param_output" type="text" label="Parameter Output File" value="params.txt"/> -->
+
+    </inputs>
+    <outputs>
+        <data name="output" format="cool" label="Predicted Hi-C contact map"/>
+    </outputs>
+    <help><![CDATA[
+This tool predicts Hi-C contact maps from chromatin folders using a pre-trained HiC-GAN model.
+
+**Inputs:**
+- Chromatin folder containing bigWig files.
+- Select a preinstalled model.
+- Chromosomes to predict.
+- Output file for parameters.
+
+**Output:**
+- A .cool file containing the predicted Hi-C contact map.
+- A .txt file with prediction parameters.
+    ]]>
+    </help>
+</tool>

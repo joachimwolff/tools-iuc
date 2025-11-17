@@ -1,0 +1,6 @@
+<tables>
+    <table name="akita_models" comment_char="#" allow_duplicate_entries="False">
+        <columns>value,name,genome,celltype,description,path,binsize,batchsize,windowsize</columns>
+        <file path="/home/mh-hannover.local/wolffjoa/src/tools-iuc/tools/akita/tool-data/akita_models.loc"/>
+    </table>
+</tables>
