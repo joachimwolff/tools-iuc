@@ -1,0 +1,87 @@
+<tool id="corigami_predict" name="C.Origami Predict" version="1.0.0" profile="23.0">
+    <description>Predict Hi-C contact maps using Hi-cGAN</description>
+    <requirements>
+        <requirement type="package" version="3.9">python</requirement>
+        <requirement type="package">pytorch</requirement>
+        <requirement type="package">pytorch-cuda</requirement>
+        <requirement type="package">cooler</requirement>
+        <requirement type="package">torchvision</requirement>
+        <requirement type="package">torchmetrics</requirement>
+        <requirement type="package">matplotlib</requirement>
+        <requirement type="package">numpy</requirement>
+        <requirement type="package">pandas</requirement>
+        <requirement type="package">pybigwig</requirement>
+        <requirement type="package">omegaconf</requirement>
+        <requirement type="package">scikit-learn</requirement>
+        <requirement type="package">scipy</requirement>
+        <requirement type="package">tqdm</requirement>
+
+    </requirements>
+    <command detect_errors="exit_code">
+        <![CDATA[
+        bash $__tool_directory__/run_tool.sh && 
+        mkdir -p corigami_data/bigwig/ &&
+        mkdir -p corigami_data/fasta &&
+
+        cp $bigwig_atac corigami_data/bigwig/ATAC.bw &&
+        cp $bigwig_ctcf corigami_data/bigwig/CTCF.bw &&
+        cp -r $fasta_seq corigami_data/fasta/ &&
+
+        echo "${model.fields.path}" &&
+        ls -lah "${model.fields.path}" &&
+        ln -s "${model.fields.path}" model.keras &&
+        #set $input_folder_bigwig="corigami_data/bigwig/"
+        #set $input_folder_fasta="corigami_data/fasta/"
+
+        which corigami-predict &&
+        ls -lah corigami_data/bigwig/ &&
+        ls -lah corigami_data/fasta/ &&
+
+        corigami-predict \
+            --out outputFolder \
+            --celltype IMR90 \
+            --chr chr1 \
+            --start 0 \
+            --model corigami_data/model_weights/corigami_base.ckpt \
+            --seq "${input_folder_fasta}" \
+            --ctcf "${input_folder_bigwig}/CTCF.bw"  \
+            --atac "${input_folder_bigwig}/ATAC.bw"  \
+            --full-chr \
+            --chr-len "${chromosome_size}" \
+            --gpu 1 &&
+
+            mv outputFolder/IMR90/chr1_cooler_output.cool $output
+
+        ]]>
+    </command>
+    <inputs>
+        <param name="model" type="select" label="Preinstalled Model">
+            <options from_data_table="corigami_models" />
+        </param>
+        <param name="bigwig_atac" type="data" format="bigwig" multiple="false" label="Input ATAC data" help="Select an ATAC-seq as bigWig file."/>
+        <param name="bigwig_ctcf" type="data" format="bigwig" multiple="false" label="Input CTCF data" help="Select an CTCF (from ChIP-seq) input as bigWig file."/>
+        <param name="fasta_seq" type="data" format="fasta" multiple="false" label="Input DNA sequence" help="Select a DNA sequence as FASTA file."/>
+        <param name="chromosome_size" type="data" format="txt" multiple="false" label="Chromosome size" help="Select a chromosome size file as TXT file."/>
+
+        <param name="chromosomes" type="text" label="Prediction Chromosomes (comma-separated)" value="chr2" help="Enter chromosomes separated by commas, e.g., chr1,chr2,chr3"/>
+        <!-- <param name="param_output" type="text" label="Parameter Output File" value="params.txt"/> -->
+
+    </inputs>
+    <outputs>
+        <data name="output" format="cool" label="Predicted Hi-C contact map"/>
+    </outputs>
+    <help><![CDATA[
+This tool predicts Hi-C contact maps from chromatin folders using a pre-trained HiC-GAN model.
+
+**Inputs:**
+- Chromatin folder containing bigWig files.
+- Select a preinstalled model.
+- Chromosomes to predict.
+- Output file for parameters.
+
+**Output:**
+- A .cool file containing the predicted Hi-C contact map.
+- A .txt file with prediction parameters.
+    ]]>
+    </help>
+</tool>

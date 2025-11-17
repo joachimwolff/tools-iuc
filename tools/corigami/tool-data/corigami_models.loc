@@ -1,0 +1,2 @@
+#value	name	genome	celltype	description	path	binsize	batchsize	windowsize
+model1	GM12878CTCF	hg38	IMR90	IMR90 trained with CTCF and ATAC	/home/mh-hannover.local/wolffjoa/src/tools-iuc/tools/hicgan/tool-data/corigami_base.ckpt	8192	1	64
