@@ -8,6 +8,23 @@
         <include path="test-data/flt3_exon14-15.fa"/>
     </required_files>
     <command detect_errors="exit_code"><![CDATA[
+## The read files for this run (one sample): one dataset, a forward/reverse pair,
+## or the two elements of a paired collection.
+#if $input.input_type == 'single'
+    #set $read_files = [$input.reads]
+#elif $input.input_type == 'paired'
+    #set $read_files = [$input.reads.forward, $input.reads.reverse]
+#else
+    #set $read_files = [$input.forward, $input.reverse]
+#end if
+## Guard: FiLT3r expects sequencing reads. Supplying a reference, genome or
+## assembly by mistake makes it consume tens of GB of RAM for a very long time,
+## so abort early if any input sequence is longer than a read could plausibly be
+## (> 1,000,000 bp). gzip -cdf transparently handles plain and gzipped inputs.
+#for $rf in $read_files
+    gzip -cdf '$rf' | awk '/^[>@+]/{l=0;next}{l+=length(\$0)}l>1000000{exit 1}'
+    || { echo "FiLT3r error: a reads input contains a sequence longer than 1,000,000 bp and looks like a genome, assembly or reference rather than sequencing reads. Please supply short sequencing reads (FASTA/FASTQ)." >&2 ; exit 1 ; } &&
+#end for
 filt3r
     -k $kmer_size
     --nb-threads "\${GALAXY_SLOTS:-1}"
@@ -39,13 +56,9 @@ filt3r
     ## independent job and the outputs are gathered into a collection.
     ## --sequences is greedy (consumes every following token), so keep it last.
     --sequences
-    #if $input.input_type == 'single'
-        '$input.reads'
-    #elif $input.input_type == 'paired'
-        '$input.reads.forward' '$input.reads.reverse'
-    #else
-        '$input.forward' '$input.reverse'
-    #end if
+    #for $rf in $read_files
+        '$rf'
+    #end for
     ]]></command>
     <inputs>
         <conditional name="input">
@@ -192,6 +205,20 @@ filt3r
                 </assert_contents>
             </output>
         </test>
+        <!-- A genome/reference supplied as reads is rejected before running -->
+        <test expect_failure="true">
+            <conditional name="input">
+                <param name="input_type" value="single"/>
+                <param name="reads" value="genome_like.fasta.gz" ftype="fasta.gz"/>
+            </conditional>
+            <param name="kmer_size" value="12"/>
+            <conditional name="reference_source">
+                <param name="reference_source_selector" value="builtin"/>
+            </conditional>
+            <assert_stderr>
+                <has_text text="looks like a genome"/>
+            </assert_stderr>
+        </test>
     </tests>
     <help format="markdown"><![CDATA[
 ## What it does
@@ -211,6 +238,10 @@ duplications (FLT3-ITD) from capture and RNA-Seq data.
   - *Paired collection*: forward and reverse are analysed together as one sample.
     Supply a **list:paired** collection to analyse each pair independently.
   - *Two datasets*: separate forward and reverse datasets, analysed as one sample.
+
+  The reads must be sequencing reads, not a genome/assembly/reference: an input
+  containing a sequence longer than 1,000,000 bp is rejected before the run to
+  avoid a runaway job.
 
 - **Reference**: the built-in FLT3 exon 14-15 sequence (default) or your own
   single-sequence FASTA. Give the reference a `chr:start-end:strand` header to
